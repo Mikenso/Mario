@@ -28,6 +28,7 @@ import com.mike.mariobros.MarioBros;
 import com.mike.mariobros.scenes.Hud;
 import com.mike.mariobros.sprites.Mario;
 import com.mike.mariobros.tools.B2WorldCreator;
+import com.mike.mariobros.tools.WorldContactListener;
 
 
 /**
@@ -69,6 +70,8 @@ public class PlayScreen implements Screen {
 
       new B2WorldCreator(world, map);
 
+        world.setContactListener(new WorldContactListener());
+
 
     }
 
@@ -108,7 +111,7 @@ public class PlayScreen implements Screen {
 
         renderer.render();
 
-        b2dr.render(world, gameCam.combined);
+       b2dr.render(world, gameCam.combined);
 
         game.batch.setProjectionMatrix(gameCam.combined);
         game.batch.begin();
