@@ -10,6 +10,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.mike.mariobros.MarioBros;
+import com.mike.mariobros.screens.PlayScreen;
 import com.mike.mariobros.sprites.Brick;
 import com.mike.mariobros.sprites.Coin;
 
@@ -17,7 +18,10 @@ import com.mike.mariobros.sprites.Coin;
  * Created by Mike on 27.10.2016.
  */
 public class B2WorldCreator {
-    public B2WorldCreator(World world, TiledMap map) {
+    public B2WorldCreator(PlayScreen screen) {
+
+        World world = screen.getWorld();
+        TiledMap map = screen.getMap();
         BodyDef bodyDef = new BodyDef();
         PolygonShape shape = new PolygonShape();
         FixtureDef fDef = new FixtureDef();
@@ -47,6 +51,7 @@ public class B2WorldCreator {
             body = world.createBody(bodyDef);
             shape.setAsBox(rect.getWidth()/2 / MarioBros.PPM , rect.getHeight()/2 / MarioBros.PPM);
             fDef.shape = shape;
+            fDef.filter.categoryBits = MarioBros.OBJECT_BIT;
             body.createFixture(fDef);
         }
 
@@ -54,14 +59,14 @@ public class B2WorldCreator {
         for (MapObject object : map.getLayers().get(5).getObjects().getByType(RectangleMapObject.class)) {
             Rectangle rect = ((RectangleMapObject) object).getRectangle();
 
-            new Brick(world, map, rect);
+            new Brick(screen, rect);
         }
 
         //coins
         for (MapObject object : map.getLayers().get(4).getObjects().getByType(RectangleMapObject.class)) {
             Rectangle rect = ((RectangleMapObject) object).getRectangle();
 
-            new Coin(world, map, rect);
+            new Coin(screen, rect);
         }
     }
 }

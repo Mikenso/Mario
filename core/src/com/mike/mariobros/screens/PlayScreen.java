@@ -3,6 +3,7 @@ package com.mike.mariobros.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -26,6 +27,7 @@ import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mike.mariobros.MarioBros;
 import com.mike.mariobros.scenes.Hud;
+import com.mike.mariobros.sprites.Goomba;
 import com.mike.mariobros.sprites.Mario;
 import com.mike.mariobros.tools.B2WorldCreator;
 import com.mike.mariobros.tools.WorldContactListener;
@@ -44,7 +46,9 @@ public class PlayScreen implements Screen {
     private Viewport gamePort;
     private OrthographicCamera gameCam;
     private Mario player;
+    private Goomba goomba;
     private TextureAtlas atlas;
+    private Music music;
 
 
     private World world;
@@ -65,13 +69,19 @@ public class PlayScreen implements Screen {
 
         world = new World(new Vector2(0, -10 ), true);
         b2dr = new Box2DDebugRenderer();
-        player = new Mario(this.world, this);
+        player = new Mario(this);
 
 
-      new B2WorldCreator(world, map);
+      new B2WorldCreator(this);
 
         world.setContactListener(new WorldContactListener());
 
+         music = MarioBros.assetManager.get("audio/music/mario_music.ogg", Music.class);
+        music.setLooping(true);
+        music.setVolume(0.05f);
+        music.play();
+
+        goomba = new Goomba(this, .32f, .32f);
 
     }
 
@@ -79,10 +89,20 @@ public class PlayScreen implements Screen {
         return atlas;
     }
 
+    public TiledMap getMap() {
+        return map;
+    }
+
+    public World getWorld() {
+        return world;
+    }
+
     public void update (float dt) {
         hadleInput(dt);
         world.step(1 / 60f, 6, 2);
         player.update(dt);
+        goomba.update(dt);
+        hud.update(dt);
         gameCam.position.x = player.b2body.getPosition().x;
         gameCam.update();
         renderer.setView(gameCam);
@@ -116,6 +136,7 @@ public class PlayScreen implements Screen {
         game.batch.setProjectionMatrix(gameCam.combined);
         game.batch.begin();
         player.draw(game.batch);
+        goomba.draw(game.batch);
         game.batch.end();
 
 
