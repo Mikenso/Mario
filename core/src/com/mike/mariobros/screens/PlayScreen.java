@@ -22,7 +22,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mike.mariobros.MarioBros;
 import com.mike.mariobros.scenes.Hud;
-import com.mike.mariobros.sprites.Goomba;
+import com.mike.mariobros.sprites.enemies.Enemy;
 import com.mike.mariobros.sprites.Mario;
 import com.mike.mariobros.tools.B2WorldCreator;
 import com.mike.mariobros.tools.WorldContactListener;
@@ -41,7 +41,7 @@ public class PlayScreen implements Screen {
     private Viewport gamePort;
     private OrthographicCamera gameCam;
     private Mario player;
-    private Goomba goomba;
+    private B2WorldCreator creator;
     private TextureAtlas atlas;
     private Music music;
 
@@ -67,7 +67,7 @@ public class PlayScreen implements Screen {
         player = new Mario(this);
 
 
-      new B2WorldCreator(this);
+       creator = new B2WorldCreator(this);
 
         world.setContactListener(new WorldContactListener());
 
@@ -76,7 +76,7 @@ public class PlayScreen implements Screen {
         music.setVolume(0.05f);
         music.play();
 
-        goomba = new Goomba(this, 1f, .32f);
+
 
     }
 
@@ -96,7 +96,12 @@ public class PlayScreen implements Screen {
         hadleInput(dt);
         world.step(1 / 60f, 6, 2);
         player.update(dt);
-        goomba.update(dt);
+        for (Enemy enemy: creator.getGoombas()   ) {
+              enemy.update(dt);
+            if (enemy.getX() < player.getX() + 224 / MarioBros.PPM) {
+                enemy.b2body.setActive(true);
+            }
+        }
         hud.update(dt);
         gameCam.position.x = player.b2body.getPosition().x;
         gameCam.update();
@@ -131,7 +136,9 @@ public class PlayScreen implements Screen {
         game.batch.setProjectionMatrix(gameCam.combined);
         game.batch.begin();
         player.draw(game.batch);
-        goomba.draw(game.batch);
+        for (Enemy enemy: creator.getGoombas()   ) {
+            enemy.draw(game.batch);
+        }
         game.batch.end();
 
 
