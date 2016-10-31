@@ -7,8 +7,10 @@ import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.mike.mariobros.MarioBros;
+import com.mike.mariobros.sprites.Mario;
 import com.mike.mariobros.sprites.enemies.Enemy;
 import com.mike.mariobros.sprites.InterActiveTileObject;
+import com.mike.mariobros.sprites.items.Item;
 
 /**
  * Created by Mike on 28.10.2016.
@@ -32,12 +34,20 @@ public class WorldContactListener implements ContactListener {
         }
 
         switch (cDef) {
+          /*  case MarioBros.MARIO_HEAD_BIT | MarioBros.BRICK_BIT:
+            case MarioBros.MARIO_HEAD_BIT | MarioBros.COIN_BIT:
+                if(fixA.getFilterData().categoryBits == MarioBros.MARIO_HEAD_BIT)
+                    ((InterActiveTileObject) fixB.getUserData()).onHeadHit((Mario) fixA.getUserData());
+                else
+                    ((InterActiveTileObject) fixA.getUserData()).onHeadHit((Mario) fixB.getUserData());
+                break;*/
             case MarioBros.ENEMY_HEAD_BIT | MarioBros.MARIO_BIT :
                 if (fixA.getFilterData().categoryBits ==  MarioBros.ENEMY_HEAD_BIT)
                     ((Enemy) fixA.getUserData()).hitOnHead();
                 else if (fixB.getFilterData().categoryBits ==  MarioBros.ENEMY_HEAD_BIT)
                     ((Enemy) fixB.getUserData()).hitOnHead();
                 break;
+            case MarioBros.ENEMY_BIT | MarioBros.GROUND_BIT :
             case MarioBros.ENEMY_BIT | MarioBros.OBJECT_BIT :
                 if (fixA.getFilterData().categoryBits ==  MarioBros.ENEMY_BIT)
                     ((Enemy) fixA.getUserData()).reverseVelocity(true, false);
@@ -51,6 +61,19 @@ public class WorldContactListener implements ContactListener {
                 ((Enemy) fixA.getUserData()).reverseVelocity(true, false);
                 ((Enemy) fixB.getUserData()).reverseVelocity(true, false);
                 break;
+            case MarioBros.ITEM_BIT | MarioBros.OBJECT_BIT :
+                if (fixA.getFilterData().categoryBits ==  MarioBros.ITEM_BIT)
+                    ((Item) fixA.getUserData()).reverseVelocity(true, false);
+                else
+                    ((Item) fixB.getUserData()).reverseVelocity(true, false);
+                break;
+            case MarioBros.ITEM_BIT | MarioBros.MARIO_BIT :
+                if (fixA.getFilterData().categoryBits ==  MarioBros.ITEM_BIT)
+                    ((Item) fixA.getUserData()).use((Mario) fixB.getUserData());
+                else
+                    ((Item) fixB.getUserData()).use((Mario) fixA.getUserData());
+                break;
+
         }
     }
 

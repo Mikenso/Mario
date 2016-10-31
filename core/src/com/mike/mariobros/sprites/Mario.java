@@ -63,34 +63,34 @@ public class Mario extends Sprite {
         setRegion(marioStand);
     }
 
-    private void defineMario() {
-        BodyDef bodyDef = new BodyDef();
-        bodyDef.position.set(32 / MarioBros.PPM, 32/ MarioBros.PPM);
-        bodyDef.type = BodyDef.BodyType.DynamicBody;
+    public void defineMario(){
+        BodyDef bdef = new BodyDef();
+        bdef.position.set(32 / MarioBros.PPM, 32 / MarioBros.PPM);
+        bdef.type = BodyDef.BodyType.DynamicBody;
+        b2body = world.createBody(bdef);
 
-        b2body = world.createBody(bodyDef);
-
-        FixtureDef fixtureDef = new FixtureDef();
+        FixtureDef fdef = new FixtureDef();
         CircleShape shape = new CircleShape();
         shape.setRadius(6 / MarioBros.PPM);
-        fixtureDef.filter.categoryBits = MarioBros.MARIO_BIT;
-        fixtureDef.filter.maskBits = MarioBros.GROUND_BIT
-                | MarioBros.COIN_BIT |
+        fdef.filter.categoryBits = MarioBros.MARIO_BIT;
+        fdef.filter.maskBits = MarioBros.GROUND_BIT |
+                MarioBros.COIN_BIT |
                 MarioBros.BRICK_BIT |
                 MarioBros.ENEMY_BIT |
                 MarioBros.OBJECT_BIT |
-                MarioBros.ENEMY_HEAD_BIT;
+                MarioBros.ENEMY_HEAD_BIT |
+                MarioBros.ITEM_BIT;
 
-        fixtureDef.shape = shape;
-
-        b2body.createFixture(fixtureDef);
+        fdef.shape = shape;
+        b2body.createFixture(fdef).setUserData(this);
 
         EdgeShape head = new EdgeShape();
-        head.set(new Vector2( - 2 / MarioBros.PPM, 6 / MarioBros.PPM), new Vector2( 2 / MarioBros.PPM, 6 / MarioBros.PPM));
-        fixtureDef.shape = head;
-        fixtureDef.isSensor = true;
+        head.set(new Vector2(-2 / MarioBros.PPM, 6 / MarioBros.PPM), new Vector2(2 / MarioBros.PPM, 6 / MarioBros.PPM));
+        fdef.filter.categoryBits = MarioBros.MARIO_HEAD_BIT;
+        fdef.shape = head;
+        fdef.isSensor = true;
 
-        b2body.createFixture(fixtureDef).setUserData("head");
+        b2body.createFixture(fdef).setUserData("head");
     }
 
     public  void update(float dt) {

@@ -1,5 +1,7 @@
 package com.mike.mariobros.sprites;
 
+import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
@@ -22,13 +24,17 @@ public abstract class InterActiveTileObject {
     protected TiledMap map;
     protected TiledMapTile tile;
     protected Rectangle bounds;
+    protected MapObject object;
     protected Body body;
     protected Fixture fixture;
+    protected PlayScreen screen;
 
-    public InterActiveTileObject(PlayScreen screen, Rectangle bounds) {
+    public InterActiveTileObject(PlayScreen screen, MapObject object) {
+       this.object = object;
+        this.screen = screen;
         this.world = screen.getWorld();
         this.map = screen.getMap();
-        this.bounds = bounds;
+        this.bounds = ((RectangleMapObject) object).getRectangle();
 
 
         BodyDef bodyDef = new BodyDef();
