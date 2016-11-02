@@ -32,7 +32,7 @@ public class Coin extends  InterActiveTileObject {
     }
 
     @Override
-    public void onHeadHit() {
+    public void onHeadHit(Mario mario) {
         Gdx.app.log("Coin", "Collusion");
         if(getCell().getTile().getId() == BLANK_COIN)
             MarioBros.assetManager.get("audio/sounds/bump.wav", Sound.class).play(0.05f);
