@@ -16,6 +16,7 @@ public class MarioBros extends Game {
 	public static final int V_HEIGHT = 208;
 	public static final float PPM = 100;
 
+	public static final short NOTHING_BIT = 0 ;
 	public static final short GROUND_BIT = 1 ;
 	public static final short MARIO_BIT = 2;
 	public static final short BRICK_BIT = 4;
@@ -26,6 +27,7 @@ public class MarioBros extends Game {
 	public static final short ENEMY_HEAD_BIT = 128;
 	public static final short ITEM_BIT = 256;
 	public static final short MARIO_HEAD_BIT = 512 ;
+
 
 
 	public SpriteBatch batch;
@@ -44,6 +46,9 @@ public class MarioBros extends Game {
 		assetManager.load("audio/sounds/breakblock.wav", Sound.class);
 		assetManager.load("audio/sounds/powerup_spawn.wav", Sound.class);
 		assetManager.load("audio/sounds/powerup.wav", Sound.class);
+		assetManager.load("audio/sounds/powerdown.wav", Sound.class);
+		assetManager.load("audio/sounds/stomp.wav", Sound.class);
+		assetManager.load("audio/sounds/mariodie.wav", Sound.class);
 		assetManager.finishLoading();
 		setScreen(new PlayScreen(this));
 	}

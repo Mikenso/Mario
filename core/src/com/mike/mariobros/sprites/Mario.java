@@ -1,5 +1,6 @@
 package com.mike.mariobros.sprites;
 
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -9,12 +10,15 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.EdgeShape;
+import com.badlogic.gdx.physics.box2d.Filter;
+import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.mike.mariobros.MarioBros;
 import com.mike.mariobros.screens.PlayScreen;
-
+import com.mike.mariobros.sprites.enemies.Enemy;
+import com.mike.mariobros.sprites.enemies.Turtle;
 
 
 /**
@@ -26,26 +30,35 @@ public class Mario extends Sprite {
 
     private TextureRegion bigMarioStand;
     private TextureRegion bigMarioJump;
+    private TextureRegion marioJump;
+    private TextureRegion marioDead;
+    private TextureRegion marioStand;
+
     private Animation bigMarioRun;
     private Animation growMario;
+    private Animation marioRun;
 
     private boolean marioIsBig;
     private boolean runGrowAnimation;
     private boolean timeToDefineBigMario;
+    private boolean timeToReDefineMario;
+    private boolean runningRight;
+    private boolean marioIsDead;
 
-
-
-
-    public enum State {FALLING, JUMPING, STANDINING, RUNNING, GROWING }
+    public enum State {FALLING, JUMPING, STANDINING, RUNNING, GROWING, DEAD }
     public State currentState;
     public State previosState;
 
-    private Animation marioRun;
-    private TextureRegion marioJump;
     private float stateTimer;
-    private boolean runningRight;
 
-    private TextureRegion marioStand;
+
+    public boolean isDead() {
+        return marioIsDead;
+    }
+
+    public float getStateTimer() {
+        return stateTimer;
+    }
 
     public boolean isMarioIsBig() {
         return marioIsBig;
@@ -87,6 +100,8 @@ public class Mario extends Sprite {
 
         marioStand = new TextureRegion(screen.getAtlas().findRegion("little_mario"), 0, 0, 16, 16);
         bigMarioStand = new TextureRegion(screen.getAtlas().findRegion("big_mario"), 0, 0, 16, 32);
+
+        marioDead = new TextureRegion(screen.getAtlas().findRegion("little_mario"), 96, 0, 16, 16);
 
        defineMario();
 
@@ -168,6 +183,30 @@ public class Mario extends Sprite {
         b2body.createFixture(fdef).setUserData(this);
     }
 
+    public  void hit(Enemy enemy) {
+        if (enemy instanceof Turtle && ((Turtle) enemy).getCurrentState() == Turtle.State.STANDING_SHELL)
+            ((Turtle) enemy).kick(enemy.b2body.getPosition().x > b2body.getPosition().x ? Turtle.KICK_RIGHT : Turtle.KICK_LEFT);
+        else {
+            if (marioIsBig) {
+                marioIsBig = false;
+                timeToReDefineMario = true;
+                setBounds(getX(), getY(), getWidth(), getHeight() / 2);
+                MarioBros.assetManager.get("audio/sounds/powerdown.wav", Sound.class).play(0.05f);
+            } else {
+                MarioBros.assetManager.get("audio/music/mario_music.ogg", Music.class).stop();
+                MarioBros.assetManager.get("audio/sounds/mariodie.wav", Sound.class).play(0.05f);
+                marioIsDead = true;
+                Filter filter = new Filter();
+                filter.maskBits = MarioBros.NOTHING_BIT;
+
+                for (Fixture fixture : b2body.getFixtureList()) {
+                    fixture.setFilterData(filter);
+                }
+                b2body.applyLinearImpulse(new Vector2(0, 4f), b2body.getWorldCenter(), true);
+            }
+        }
+    }
+
     public  void update(float dt) {
         if (marioIsBig)
             setPosition(b2body.getPosition().x - getWidth() /2 , b2body.getPosition().y - getHeight() /2 -6 /MarioBros.PPM );
@@ -178,12 +217,52 @@ public class Mario extends Sprite {
         if (timeToDefineBigMario) {
             defineBigMario();
         }
+        if (timeToReDefineMario) {
+            reDefineMario();
+        }
+    }
+
+    private void reDefineMario() {
+        Vector2 position = b2body.getPosition();
+        world.destroyBody(b2body);
+
+        BodyDef bdef = new BodyDef();
+        bdef.position.set(position);
+        bdef.type = BodyDef.BodyType.DynamicBody;
+        b2body = world.createBody(bdef);
+
+        FixtureDef fdef = new FixtureDef();
+        CircleShape shape = new CircleShape();
+        shape.setRadius(6 / MarioBros.PPM);
+        fdef.filter.categoryBits = MarioBros.MARIO_BIT;
+        fdef.filter.maskBits = MarioBros.GROUND_BIT |
+                MarioBros.COIN_BIT |
+                MarioBros.BRICK_BIT |
+                MarioBros.ENEMY_BIT |
+                MarioBros.OBJECT_BIT |
+                MarioBros.ENEMY_HEAD_BIT |
+                MarioBros.ITEM_BIT;
+
+        fdef.shape = shape;
+        b2body.createFixture(fdef).setUserData(this);
+
+        EdgeShape head = new EdgeShape();
+        head.set(new Vector2(-2 / MarioBros.PPM, 6 / MarioBros.PPM), new Vector2(2 / MarioBros.PPM, 6 / MarioBros.PPM));
+        fdef.filter.categoryBits = MarioBros.MARIO_HEAD_BIT;
+        fdef.shape = head;
+        fdef.isSensor = true;
+
+        b2body.createFixture(fdef).setUserData(this);
+        timeToReDefineMario = false;
     }
 
     private TextureRegion getFrame(float dt) {
         currentState = getState();
         TextureRegion region ;
         switch (currentState) {
+            case DEAD :
+                region = marioDead;
+                break;
             case GROWING:
                 region = growMario.getKeyFrame(stateTimer);
                 if (growMario.isAnimationFinished(stateTimer))
@@ -215,10 +294,11 @@ public class Mario extends Sprite {
     }
 
     public State getState() {
-        if (runGrowAnimation) return State.GROWING;
+        if (marioIsDead) return State.DEAD;
+        else if (runGrowAnimation) return State.GROWING;
         else if ((b2body.getLinearVelocity().y > 0) || (b2body.getLinearVelocity().y < 0 && previosState ==State.JUMPING) ) return State.JUMPING;
-       else if (b2body.getLinearVelocity().y < 0) return State.FALLING;
-       else if (b2body.getLinearVelocity().x != 0) return State.RUNNING;
+        else if (b2body.getLinearVelocity().y < 0) return State.FALLING;
+        else if (b2body.getLinearVelocity().x != 0) return State.RUNNING;
         else return State.STANDINING;
     }
 }
