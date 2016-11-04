@@ -5,16 +5,17 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mike.mariobros.MarioBros;
-import com.mike.mariobros.sprites.Mario;
 
-import java.awt.Color;
 
 /**
  * Created by Mike on 03.11.2016.
@@ -23,9 +24,13 @@ public class GameOverScreen implements Screen {
     private Viewport viewport;
     private Stage stage;
     private Game game;
+    private Texture backGround;
+    private SpriteBatch spriteBatch;
 
     public GameOverScreen(Game game) {
         this.game = game;
+        backGround = new Texture("game_over.png");
+        spriteBatch = new SpriteBatch();
         viewport = new FitViewport(MarioBros.V_WIDTH, MarioBros.V_HEIGHT, new OrthographicCamera());
         stage = new Stage(viewport, ((MarioBros) game).batch);
         Label.LabelStyle font = new Label.LabelStyle(new BitmapFont(), com.badlogic.gdx.graphics.Color.WHITE);
@@ -57,6 +62,9 @@ public class GameOverScreen implements Screen {
         }
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        spriteBatch.begin();
+        spriteBatch.draw(backGround, 0, 0);
+        spriteBatch.end();
     stage.draw();
     }
 

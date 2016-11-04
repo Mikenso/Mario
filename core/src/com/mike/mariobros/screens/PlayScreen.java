@@ -1,5 +1,6 @@
 package com.mike.mariobros.screens;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -21,6 +22,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.mike.mariobros.Controller;
 import com.mike.mariobros.MarioBros;
 import com.mike.mariobros.scenes.Hud;
 import com.mike.mariobros.sprites.enemies.Enemy;
@@ -30,8 +32,6 @@ import com.mike.mariobros.sprites.items.ItemDef;
 import com.mike.mariobros.sprites.items.Mushroom;
 import com.mike.mariobros.tools.B2WorldCreator;
 import com.mike.mariobros.tools.WorldContactListener;
-
-import java.util.PriorityQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
@@ -53,6 +53,7 @@ public class PlayScreen implements Screen {
     private Music music;
     private Array<Item> items;
     private LinkedBlockingQueue<ItemDef> itemsToSpawn;
+    private Controller controller;
 
 
 
@@ -89,6 +90,8 @@ public class PlayScreen implements Screen {
         items = new Array<Item>();
         itemsToSpawn = new LinkedBlockingQueue<ItemDef>();
 
+        controller = new Controller();
+
     }
 
     public boolean gameOver() {
@@ -122,7 +125,7 @@ public class PlayScreen implements Screen {
     }
 
     public void update (float dt) {
-        hadleInput(dt);
+        handleInput(dt);
         handleSpawningItems();
         world.step(1 / 60f, 6, 2);
         player.update(dt);
@@ -143,13 +146,15 @@ public class PlayScreen implements Screen {
         renderer.setView(gameCam);
     }
 
-    private void hadleInput(float dt) {
+    private void handleInput(float dt) {
         if (!player.currentState.equals(Mario.State.DEAD)) {
-            if (Gdx.input.isKeyJustPressed(Input.Keys.UP))
+            if (player.getCurrentState() != Mario.State.FALLING && player.getCurrentState() != Mario.State.JUMPING  ) { if  (Gdx.input.isKeyJustPressed(Input.Keys.UP) || controller.isUpPressed()) {
                 player.b2body.applyLinearImpulse(new Vector2(0, 4f), player.b2body.getWorldCenter(), true);
-            if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) && player.b2body.getLinearVelocity().x <= 2)
+            }
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || controller.isRightPressed() && player.b2body.getLinearVelocity().x <= 2)
                 player.b2body.applyLinearImpulse(new Vector2(0.1f, 0), player.b2body.getWorldCenter(), true);
-            if (Gdx.input.isKeyPressed(Input.Keys.LEFT) && player.b2body.getLinearVelocity().x <= 2)
+            if (Gdx.input.isKeyPressed(Input.Keys.LEFT) ||  controller.isLeftPressed()&& player.b2body.getLinearVelocity().x <= 2)
                 player.b2body.applyLinearImpulse(new Vector2(-0.1f, 0), player.b2body.getWorldCenter(), true);
         }
     }
@@ -168,11 +173,12 @@ public class PlayScreen implements Screen {
 
         renderer.render();
 
-        b2dr.render(world, gameCam.combined);
+      //  b2dr.render(world, gameCam.combined);
 
         game.batch.setProjectionMatrix(gameCam.combined);
         game.batch.begin();
         player.draw(game.batch);
+
         for (Enemy enemy: creator.getEnemies()   ) {
             enemy.draw(game.batch);
         }
@@ -190,11 +196,16 @@ public class PlayScreen implements Screen {
             dispose();
         }
 
+
+        if (Gdx.app.getType() == Application.ApplicationType.Android)
+        controller.draw();
+
     }
 
     @Override
     public void resize(int width, int height) {
      gamePort.update(width, height);
+     controller.resize(width, height);
     }
 
     @Override

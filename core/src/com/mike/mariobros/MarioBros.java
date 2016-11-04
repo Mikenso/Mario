@@ -30,7 +30,7 @@ public class MarioBros extends Game {
 
 
 
-	public SpriteBatch batch;
+	public static SpriteBatch batch;
 
 	public static AssetManager assetManager;
 

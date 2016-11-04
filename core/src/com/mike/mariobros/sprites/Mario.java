@@ -64,6 +64,10 @@ public class Mario extends Sprite {
         return marioIsBig;
     }
 
+    public State getCurrentState() {
+        return currentState;
+    }
+
     public Mario( PlayScreen screen) {
 
         this.world = screen.getWorld();
